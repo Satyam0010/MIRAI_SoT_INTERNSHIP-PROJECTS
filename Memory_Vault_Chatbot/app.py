@@ -1,7 +1,16 @@
-import streamlit as st
-from google import genai
-from dotenv import load_dotenv
 import os
+import random
+import time
+
+
+import streamlit as st
+from dotenv import load_dotenv
+from google import genai
+
+from personalities import PERSONALITIES
+from prompts import SYSTEM_PROMPT
+from styles import CUSTOM_CSS
+
 
 
 load_dotenv()
@@ -10,120 +19,218 @@ client = genai.Client(
     api_key=os.getenv("GEMINI_API_KEY")
 )
 
-
-st.set_page_config(
-    page_title="Memory Vault Chatbot",
-    page_icon="🧠"
-)
-
-st.title("🧠 Memory Vault Chatbot")
-st.caption("Powered by Gemini")
-
-
-
-personality = st.sidebar.selectbox(
-    "Choose Personality",
-    [
-        "Friendly",
-        "Professional",
-        "Teacher",
-        "Motivational",
-        "Funny"
-    ]
-)
-
-if st.sidebar.button("🗑 Clear Chat"):
-    st.session_state.messages = []
-    st.rerun()
-
-
-
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+st.set_page_config(
+    page_title="AI Multiverse 2.0",
+    page_icon="🌌",
+    layout="wide"
+)
 
-
-if len(st.session_state.messages) == 0:
-    st.info("👋 Hello! I'm your Memory Vault Chatbot. I can remember our conversation during this session.")
-
-
-
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 
 
-if prompt := st.chat_input("Say something..."):
+if "favorite" not in st.session_state:
+    st.session_state.favorite = {}
 
- 
-    with st.chat_message("user"):
-        st.markdown(prompt)
+
+st.title("🌌 AI MULTIVERSE 2.0")
+
+st.caption(
+    "Talk with heroes, scientists, athletes and legendary personalities."
+)
+
+
+
+st.sidebar.title("⚙ AI Settings")
+
+category = st.sidebar.selectbox(
+    "Category",
+    list(PERSONALITIES.keys())
+)
+
+search = st.sidebar.text_input(
+    "🔍 Search Personality"
+)
+
+names = list(PERSONALITIES[category].keys())
+
+if search:
+
+    names = [
+        p for p in names
+        if search.lower() in p.lower()
+    ]
+
+if len(names) == 0:
+
+    st.sidebar.warning("No personality found.")
+
+    st.stop()
+
+personality = st.sidebar.selectbox(
+    "Choose Personality",
+    names
+)
+
+reply_style = st.sidebar.selectbox(
+    "Response Style",
+    [
+        "Friendly",
+        "Funny",
+        "Professional",
+        "Motivational",
+        "Sarcastic",
+        "Teacher"
+    ]
+)
+
+reply_length = st.sidebar.selectbox(
+    "Response Length",
+    [
+        "Short",
+        "Medium",
+        "Long"
+    ]
+)
+
+creativity = st.sidebar.slider(
+    "Creativity",
+    0,
+    100,
+    70
+)
+
+surprise = [
+    "Tell me a joke.",
+    "Motivate me.",
+    "Teach me AI.",
+    "Explain Quantum Physics.",
+    "Give me startup ideas.",
+    "Write a poem.",
+    "Teach me DSA.",
+    "How can I become successful?"
+]
+
+if st.sidebar.button("🎲 Surprise Me"):
+    st.info(f"Suggestion: {random.choice(surprise)}")
+
+if st.sidebar.button("🗑 Clear Chat"):
+
+    st.session_state.messages = []
+
+    st.rerun()
+
+st.subheader("💬 Chat")
+
+
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+if message := st.chat_input("Say something..."):
 
     st.session_state.messages.append(
         {
             "role": "user",
-            "content": prompt
+            "content": message
         }
     )
 
+    with st.chat_message("user"):
+        st.markdown(message)
 
-    full_prompt = f"""
-You are a {personality} AI Assistant.
 
-Respond according to this personality.
+    personality_prompt = PERSONALITIES[category][personality]
 
-User:
-{prompt}
-"""
+    style_prompt = {
+        "Friendly": "Be warm and friendly.",
+        "Funny": "Be humorous and entertaining.",
+        "Professional": "Answer professionally.",
+        "Motivational": "Motivate the user.",
+        "Sarcastic": "Use light sarcasm where appropriate.",
+        "Teacher": "Explain everything clearly like a teacher."
+    }
 
-    with st.chat_message("assistant"):
+    length_prompt = {
+        "Short": "Maximum 60 words.",
+        "Medium": "Around 120 words.",
+        "Long": "Around 250 words."
+    }
 
-        with st.spinner("Thinking..."):
+    history = ""
+
+    for chat in st.session_state.messages[-6:]:
+        history += f"{chat['role']}: {chat['content']}\n"
+
+    prompt = f"""
+
+    {SYSTEM_PROMPT}
+
+    PERSONALITY
+
+    {personality_prompt}
+
+    STYLE
+
+    {style_prompt[reply_style]}
+
+    LENGTH
+
+    {length_prompt[reply_length]}
+
+    CREATIVITY LEVEL
+
+    {creativity}/100
+
+    PREVIOUS CONVERSATION
+
+    {history}
+
+    CURRENT USER MESSAGE
+
+    {message}
+
+    Remember:
+
+    Stay completely in character.
+
+    Never reveal you are an AI.
+
+    Never break character.
+
+    """
+
+    start = time.time()
+
+    with st.spinner("🌌 Entering the Multiverse..."):
+
+        try:
 
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
-                contents=full_prompt
+                contents=prompt
             )
 
             reply = response.text
 
-            st.markdown(reply)
+            with st.chat_message("assistant"):
+                st.markdown(reply)
 
-    # Save Assistant Message
+        except Exception as e:
+
+            st.error(e)
+
+            st.stop()
+
+    end = time.time()
+
     st.session_state.messages.append(
         {
-            "role": "assistant",
-            "content": reply
+        "role": "assistant",
+        "content": reply
         }
     )
 
-
-
-st.sidebar.markdown("---")
-
-st.sidebar.write(f"Total Messages : {len(st.session_state.messages)}")
-
-user_count = len(
-    [m for m in st.session_state.messages if m["role"] == "user"]
-)
-
-bot_count = len(
-    [m for m in st.session_state.messages if m["role"] == "assistant"]
-)
-
-st.sidebar.write(f"User Messages : {user_count}")
-st.sidebar.write(f"AI Messages : {bot_count}")
-
-
-
-chat = ""
-
-for msg in st.session_state.messages:
-    chat += f"{msg['role'].upper()} : {msg['content']}\n\n"
-
-st.sidebar.download_button(
-    "📥 Download Chat",
-    chat,
-    file_name="chat_history.txt"
-)

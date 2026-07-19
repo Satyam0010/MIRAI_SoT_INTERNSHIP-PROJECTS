@@ -12,9 +12,7 @@ from prompts import SYSTEM_PROMPT
 from styles import CUSTOM_CSS
 from utils import count_words, count_characters, format_chat
 
-# -----------------------------
-# CONFIG
-# -----------------------------
+
 
 load_dotenv()
 
@@ -30,9 +28,6 @@ st.set_page_config(
 
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
-# -----------------------------
-# SESSION STATE
-# -----------------------------
 
 if "history" not in st.session_state:
     st.session_state.history = []
@@ -43,9 +38,6 @@ if "message" not in st.session_state:
 if "favorite" not in st.session_state:
     st.session_state.favorite = {}
 
-# -----------------------------
-# HEADER
-# -----------------------------
 
 st.title("🌌 AI MULTIVERSE 2.0")
 
@@ -53,9 +45,7 @@ st.caption(
     "Talk with heroes, scientists, athletes and legendary personalities."
 )
 
-# -----------------------------
-# SIDEBAR
-# -----------------------------
+
 
 st.sidebar.title("⚙ AI Settings")
 
@@ -137,9 +127,7 @@ if st.sidebar.button("🗑 Clear Chat"):
 
     st.rerun()
 
-# -----------------------------
-# CHAT INPUT
-# -----------------------------
+
 
 st.subheader("💬 Chat")
 
@@ -160,9 +148,7 @@ send = st.button(
 )
 
 
-# -----------------------------
-# GENERATE RESPONSE
-# -----------------------------
+
 
 if send:
 
@@ -187,7 +173,7 @@ if send:
         "Long": "Around 250 words."
     }
 
-    # Previous conversation memory
+    
     history = ""
 
     for chat in st.session_state.history[-6:]:
@@ -273,9 +259,7 @@ Never break character.
 
     st.session_state.message = ""
 
-    # -----------------------------
-# CHAT HISTORY
-# -----------------------------
+
 
 st.divider()
 
