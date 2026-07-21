@@ -1,3 +1,7 @@
+
+
+
+
 # 📖 AI Multi-Modal Visual Novel
 
 An interactive AI-powered **Choose Your Own Adventure** Visual Novel built using **Google Gemini**, **Pollinations AI**, **gTTS**, and **Streamlit**.
@@ -193,15 +197,7 @@ Structured JSON Response
 
 ## 📸 Demo
 
-Record a short demonstration showing:
-
-- Story generation
-- AI-generated image
-- Audio narration
-- Dynamic buttons
-- Story progression
-
----
+https://github.com/user-attachments/assets/4535dc63-0c8f-45bd-a87a-cac20908e062
 
 ## 📚 Learning Outcomes
 
